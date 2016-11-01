@@ -3,6 +3,7 @@ For this moment just a WordPress plugin for inserting forms via shortcodes and h
 Includes use of MySQL database and internationalization.
 
 /wp-content/plugins/student/
+
   functions.php
   PersonLookupModel.php
   PersonLookupView.php
