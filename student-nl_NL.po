@@ -1,0 +1,168 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: student\n"
+"POT-Creation-Date: 2016-10-24 14:57+0200\n"
+"PO-Revision-Date: 2016-10-29 17:03+0200\n"
+"Last-Translator: admin <info@josnabru.nl>\n"
+"Language-Team: Dutch\n"
+"Language: nl_NL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.7.1\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"Report-Msgid-Bugs-To: \n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: PersonView.php:7
+msgid "UPDATE_PERSON"
+msgstr "Wijzig persoon"
+
+msgid "LOOKUP_PERSON"
+msgstr "Zoek persoon"
+
+msgid "CREATE_PERSON"
+msgstr "Registreer persoon"
+
+#: PersonView.php:12
+msgid "CALLING_NAME"
+msgstr "Roepnaam"
+
+#: PersonView.php:16
+msgid "FIRSTNAME"
+msgstr "Voornaam"
+
+msgid "PREFIX"
+msgstr "Voorvoegsel"
+
+#: PersonView.php:20
+msgid "SURNAME"
+msgstr "Achternaam"
+
+#: PersonView.php:24
+msgid "GENDER"
+msgstr "Geslacht"
+
+#: PersonView.php:26
+msgid "FEMALE"
+msgstr "Vrouw"
+
+#: PersonView.php:27
+msgid "ANDROGYNOUS"
+msgstr "Androgien"
+
+#: PersonView.php:28
+msgid "MALE"
+msgstr "Man"
+
+#: PersonView.php:29 PersonView.php:54
+msgid "UNKNOWN"
+msgstr "Onbekend"
+
+#: PersonView.php:33
+msgid "TITLE"
+msgstr "Titel"
+
+#: PersonView.php:35
+msgid "MISSUS"
+msgstr "Mevr."
+
+#: PersonView.php:36
+msgid "title_mej"
+msgstr "Mej."
+
+#: PersonView.php:37
+msgid "MISTER"
+msgstr "Dhr."
+
+#: PersonView.php:38
+msgid "title_dr"
+msgstr "Dr."
+
+#: PersonView.php:43
+msgid "BIRTHDATE"
+msgstr "Geboortedatum"
+
+#: PersonView.php:49
+msgid "NATURE"
+msgstr "Beroep"
+
+#: PersonView.php:51
+msgid "STUDENT"
+msgstr "Student"
+
+#: PersonView.php:52
+msgid "FUNCTION"
+msgstr "Functie"
+
+#: PersonView.php:53
+msgid "RETIRED"
+msgstr "Gepensioneerd"
+
+#: PersonView.php:58
+msgid "DESCRIPTION"
+msgstr "Beschrijving"
+
+#: PersonView.php:62
+msgid "UPAS"
+msgstr "UPas"
+
+#: PersonView.php:66
+msgid "UPDATE"
+msgstr "Wijzig"
+
+msgid "CREATE"
+msgstr "Cre&euml;er"
+
+msgid "CANCEL"
+msgstr "Annuleer"
+
+msgid "SEARCH"
+msgstr "Zoek"
+
+msgid "NOBODY_FOUND"
+msgstr "Niemand gevonden"
+
+msgid "PERSON_ID_NOT_FOUND"
+msgstr "Persoon niet gevonden"
+
+msgid "STUDENT_NOT_PRIVILEGED"
+msgstr "Onvoldoende rechten"
+
+msgid "STUDENT_NOT_LOGGED_ON"
+msgstr "Niet ingelogd"
+
+msgid "PERSON_CHANGED"
+msgstr "Persoonsgegevens gewijzigd"
+
+msgid "PERSON_NOT_CHANGED"
+msgstr "Persoonsgegevens niet gewijzigd"
+
+msgid "PERSON_CREATED"
+msgstr "Persoon opgevoerd"
+
+msgid "PERSON_NOT_CREATED"
+msgstr "Persoon niet opgevoerd"
+
+msgid "PERSON_DATA_INVALID"
+msgstr "Ongeldige invoer"
+
+msgid "FEEDBACK_INVALID_BIRTHDATE"
+msgstr "Ongeldige datum"
+
+msgid "FEEDBACK_INVALID_TOO_OLD"
+msgstr "Persoon is te oud"
+
+msgid "FEEDBACK_INVALID_TOO_YOUNG"
+msgstr "Persoon is te jong"
+
+msgid "FEEDBACK_CALLINGNAME_REQUIRED"
+msgstr "Roepnaam verplicht"
+
+msgid "FEEDBACK_SURNAME_REQUIRED"
+msgstr "Achternaam verplicht"
+
+msgid "FEEDBACK_DESCRIPTION_REQUIRED"
+msgstr "Beschrijving beroep verplicht"
