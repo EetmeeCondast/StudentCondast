@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: student\n"
 "POT-Creation-Date: 2016-10-24 14:57+0200\n"
-"PO-Revision-Date: 2016-10-29 17:02+0200\n"
+"PO-Revision-Date: 2016-11-06 17:16+0100\n"
 "Last-Translator: admin <info@josnabru.nl>\n"
 "Language-Team: Dutch\n"
 "Language: nl_NL\n"
@@ -25,6 +25,9 @@ msgstr "Create person"
 
 msgid "LOOKUP_PERSON"
 msgstr "Lookup person"
+
+msgid "CONTACTS_TITLE"
+msgstr "Contacts"
 
 #: PersonView.php:12
 msgid "CALLING_NAME"
@@ -166,3 +169,33 @@ msgstr "Surname required"
 
 msgid "FEEDBACK_DESCRIPTION_REQUIRED"
 msgstr "Description occupation required"
+
+msgid "FEEDBACK_CONTACT_REQUIRED"
+msgstr "At least 1 contact-method required"
+
+msgid "FEEDBACK_CONTACT_NO_CONTACTTYPE"
+msgstr "No contact-type"
+
+msgid "FEEDBACK_CONTACT_NO_VALUE"
+msgstr "Missing or invalid contact value"
+
+msgid "CONTACTTYPE"
+msgstr "Contact-type"
+
+msgid "VALUE"
+msgstr "Value"
+
+msgid "RESTRICTED"
+msgstr "Restricted"
+
+msgid "EMAIL"
+msgstr "E-mail address"
+
+msgid "MOBILE"
+msgstr "Telephone mobile"
+
+msgid "TELEPHONE_HOME"
+msgstr "Telephone home"
+
+msgid "TELEPHONE_WORK"
+msgstr "Telephone work"

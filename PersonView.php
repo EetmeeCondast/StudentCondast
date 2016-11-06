@@ -1,6 +1,5 @@
 <?php
 class PersonView {
-
 	public static function form(&$person_data, $action, $validation_errors) {
 		if ($validation_errors) {
 			$js_array_errors = json_encode($validation_errors);
@@ -17,7 +16,7 @@ class PersonView {
 		$form = "
 <fieldset style='border: 1px solid silver;'>
 <legend>" . __('UPDATE_PERSON', 'student') . "</legend>
-<form method='post' action='" . esc_url(admin_url('admin-post.php')) . "'>
+	<form method='post' action='" . esc_url(admin_url('admin-post.php')) . "'>
 		<input type='hidden' name='action' value='" . $action . "'>
 		<input type='hidden' name='person_id' value='" . $person_data->person_id() . "'>
 		<label for 'calling_name'>" . __('CALLING_NAME', 'student') . ": </label>
@@ -73,11 +72,48 @@ class PersonView {
 		<textarea name='description' id='description'>" . $person_data->description() . "</textarea>
 		<label for 'upas'>" . __('UPAS', 'student') . ": </label>
 		<input type='checkbox' " . self::checked($person_data, "upas") . " id='upas' name='upas' value='true'>
+		<fieldset style='border: 1px solid silver; margin: 4px; clear: both;'>
+		<legend>" . __('CONTACTS_TITLE', 'student') . "</legend>
+		<table>
+			<thead>
+			<tr>
+				<th>" . __('CONTACTTYPE', 'student') . "</th>
+				<th>" . __('VALUE', 'student') . "</th>
+				<th>" . __('RESTRICTED', 'student') . "</th>
+			</tr>
+			</thead>
+			<tbody id='contacts_tbody'>
+			<tr id='contact_row'>
+				<td>
+					<input type='hidden' name='contacts[0][app_person_id]' value='" . $person_data->app_person_id(0) . "'>
+					<input type='hidden' name='contacts[0][application]' value='0'>
+					<select name='contacts[0][contacttype]'>
+						<option value=''></option>
+						<option value='EMAIL'>" . __("EMAIL", "student") . "</option>
+						<option value='MOBILE'>" . __("MOBILE", "student") . "</option>
+						<option value='TELEPHONE_HOME'>" . __("TELEPHONE_HOME", "student") . "</option>
+						<option value='TELEPHONE_WORK'>" . __("TELEPHONE_WORK", "student") . "</option>
+					</select>
+				</td>
+				<td>
+					<input type='text' name='contacts[0][value]'>
+				</td>
+				<td>
+					<input type='checkbox' name='contacts[0][restricted]'>
+				</td>
+			</tr>
+			</tbody>
+		</table>
+		</fieldset>
 		<div style='clear: both;'></div>
 		<input type='submit' value='" . $submit_button_text . "'>
-	</span>
-</form>
+	</form>
 </fieldset>";
+		$js_array_contacts = json_encode($person_data->contacts());
+		$form .= "
+<script type='text/javascript'>
+	append_contacts(" . $js_array_contacts . ");
+</script>";
 		if ($validation_errors) {
 			$js_array_errors = json_encode($validation_errors);
 			$form .= "
@@ -91,12 +127,21 @@ class PersonView {
 		$messages_string = "";
 		if (is_array($messages_array)) {
 			foreach($messages_array as $key => $message) {
-				$starttag = "<div style='color: green; margin: 0; padding: 0;'>";
+				$starttag = "<div style='color: red; margin: 0; padding: 0;'>";
 				$endtag = "</div>";
-				if (!preg_match("/^[0-9]*$/", $key)) {
-					$starttag = "<div style='color: red; margin: 0; padding: 0;'>";
+				$json_object = json_decode($message);
+				if (json_last_error() === JSON_ERROR_NONE) {
+					foreach($json_object as $idx) {
+						foreach($idx as $err) {
+							$messages_string .= $starttag . __(sprintf("%s", $err), 'student') . $endtag;
+						}
+					}
+				} else {
+					if (preg_match("/^[0-9]*$/", $key)) {
+						$starttag = "<div style='color: green; margin: 0; padding: 0;'>";
+					}
+					$messages_string .= $starttag . __(sprintf("%s", $message), 'student') . $endtag;
 				}
-				$messages_string .= $starttag . __(sprintf("%s", $message), 'student') . $endtag;
 			}
 		}
 		return $messages_string;

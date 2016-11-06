@@ -23,13 +23,14 @@
 		$this->data["description"] = "";
 		$this->data["nature"] = "STUDENT";
 		$this->data["upas"] = "";
+		$this->data["app_app_person_id"] = array();
+		$this->data["contacts"] = array();
 	}
 	public function __destruct() {
 		if ($this->connection) {
 			$this->connection->close();
 		}
 	}
-
 /*
 	Accessor methods.
 	Spreken voor zichzelf.
@@ -46,6 +47,16 @@
 	public function description() { 	return $this->data["description"]; }
 	public function nature() { 			return $this->data["nature"]; }
 	public function upas() { 			return $this->data["upas"]; }
+	public function app_person_id($application_code) {
+		$app_person_id = 0;
+		if (array_key_exists($application_code, $this->data["app_app_person_id"])) {
+			$app_person_id =  $this->data["app_app_person_id"][$application_code];
+		}
+		return $app_person_id; 
+	}
+	public function contacts() {
+		return $this->data["contacts"]; 
+	}
 /*
 	Verbind aan database.
 	Constanten m.b.t. de database zijn gedefinieerd in wp-config.php.
@@ -102,9 +113,52 @@
 			$this->data["nature"],
 			$this->data["upas"]);
 		if (!$stmt->fetch()) {
+			//
+			//	Geen persoon gevonden. Sluit statement en return.
+			$stmt->close();
 			return false;
 		}
 		$stmt->close();
+		/*
+			Haal APPLICATION_PERSONs op.
+		*/
+		$appprs_stmt = $this->connection->prepare("select
+				APP_PERSON_ID,
+				CODE
+			from APPLICATIONPERSON 
+			where PERSON = ?");
+		$contact_stmt = $this->connection->prepare("select
+				APPLICATION,
+				CONTACTTYPE,
+				RESTRICTED,
+				VALUE
+			from ApplicationPerson_CONTACTS 
+			where ApplicationPerson_APP_PERSON_ID = ?");
+		$appprs_stmt->bind_param("i", $person_id);
+		$appprs_stmt->execute();
+		$appprs_result = $appprs_stmt->get_result();
+		$this->data["app_app_person_id"] = array();
+		$this->data["contacts"] = array();
+		$idx = 1;
+		while ($appprs = $appprs_result->fetch_assoc()) {
+			$app_person_id = $appprs["APP_PERSON_ID"];
+			$app_code = $appprs["CODE"];
+			$this->data["app_app_person_id"][$app_code] = $app_person_id;
+			$contact_stmt->bind_param("i", $app_person_id);
+			$contact_stmt->execute();
+			$contact_result = $contact_stmt->get_result();
+			while ($contact = $contact_result->fetch_assoc()) {
+				$this->data["contacts"][$idx] = array(
+					"app_person_id" => $app_person_id,
+					"application" => $app_code,
+					"contacttype" => $contact["CONTACTTYPE"],
+					"restricted" => $contact["RESTRICTED"],
+					"value" => $contact["VALUE"]);
+				$idx++;
+			}
+		}
+		$contact_stmt->close();
+		$appprs_stmt->close();
 		return true;
 	}
 /*
@@ -176,6 +230,38 @@
 			$validation_errors["description"] = "FEEDBACK_DESCRIPTION_REQUIRED";
 			$valid = false;
 		}
+		/*	Check contacts	*/
+		if (!sizeof($this->data["contacts"])) {
+			$validation_errors["contacts"] = "FEEDBACK_CONTACT_REQUIRED";
+			$valid = false;
+		}
+		else {
+			$contacts_errors = array();
+			foreach($this->data["contacts"] as $key => $contact) {
+				//	Deze gegevens moeten ook bewaard worden
+				//	i.v.m. het opslaan van contactgegevens
+				$this->data["app_app_person_id"][$contact["application"]] = $contact["app_person_id"];
+				//
+				$value = trim($contact["value"]);
+				$this->data["contacts"][$key]["value"] = $value;
+				if ($value) {
+					if (!$contact["contacttype"]) {
+						if(!isset($contacts_errors[$key])) $contacts_errors[$key] = array();
+						$contacts_errors[$key]["contacttype"] = "FEEDBACK_CONTACT_NO_CONTACTTYPE";
+					}
+				}
+				if ($contact["contacttype"]) {
+					if (!$value) {
+						if(!isset($contacts_errors[$key])) $contacts_errors[$key] = array();
+						$contacts_errors[$key]["value"] = "FEEDBACK_CONTACT_NO_VALUE";
+					}
+				}
+			}
+			if (sizeof($contacts_errors)) {
+				$validation_errors["contacts"] = json_encode($contacts_errors);
+				$valid = false;
+			}
+		}
 		if ($valid) {
 			return null;
 		} else {
@@ -190,10 +276,10 @@
 	public function create() {
 		$person_id = 0;
 		$this->connect();
-		$this->connection->query("LOCK TABLES PERSON WRITE");
-		$pid = $this->connection->query("SELECT MAX(PERSON_ID) AS 'last' FROM PERSON");
-		if ($pid->num_rows) {
-			$person_id = $pid->fetch_assoc()["last"];
+		$this->connection->query("LOCK TABLES PERSON, APPLICATIONPERSON WRITE");
+		$query = $this->connection->query("SELECT MAX(PERSON_ID) AS 'last' FROM PERSON");
+		if ($query->num_rows) {
+			$person_id = $query->fetch_assoc()["last"];
 		}
 		$person_id += 1;
 		$stmt = $this->connection->prepare("insert into PERSON( 
@@ -238,9 +324,15 @@
 		$stmt->execute();
 		if ($this->connection->affected_rows) {
 			$this->data["person_id"] = $person_id;
+			$app_person_id = $this->store_app_person($person_id);
+			$this->data["app_app_person_id"][0] = $app_person_id;
+			if ($app_person_id) {
+				$this->store_contacts();
+			}
 		}
 		$this->connection->query("UNLOCK TABLES");
 		$stmt->close();
+		
 		return $this->data["person_id"];
 	}
 /*
@@ -279,6 +371,77 @@
 			$this->data["person_id"]);
 		$stmt->execute();
 		$num_rows =  $this->connection->affected_rows;
+		$stmt->close();
+		$num_rows += $this->store_contacts();
+		return $num_rows;
+	}
+	private function store_app_person($person_id) {
+		$apid = $this->connection->query("SELECT MAX(APP_PERSON_ID) AS 'last' FROM APPLICATIONPERSON");
+		if ($apid->num_rows) {
+			$app_person_id = $apid->fetch_assoc()["last"];
+		}
+		$app_person_id += 1;
+		$app_id = 0;
+		$stmt = $this->connection->prepare("insert into APPLICATIONPERSON( 
+				APP_PERSON_ID,
+				CODE,
+				PERSON)
+			values(
+				?,
+				?,
+				?)");
+		$stmt->bind_param("iii",
+			$app_person_id,
+			$app_id,
+			$person_id);
+		$stmt->execute();
+		$num_rows =  $this->connection->affected_rows;
+		$stmt->close();
+		if ($num_rows) {
+			return $app_person_id;
+		} else {
+			return 0;
+		}
+	}
+	private function store_contacts() {
+		$num_rows = 0;
+		$stmt = $this->connection->prepare("delete from ApplicationPerson_CONTACTS
+			where ApplicationPerson_APP_PERSON_ID = ?");
+		foreach($this->data["app_app_person_id"] as $id) {
+			$stmt->bind_param("i", $id);
+			$stmt->execute();
+			$num_rows += $this->connection->affected_rows;
+		}
+		$stmt = $this->connection->prepare("insert into ApplicationPerson_CONTACTS (
+				APPLICATION,
+				CONTACTTYPE,
+				RESTRICTED,
+				VALUE,
+				ApplicationPerson_APP_PERSON_ID)
+			values (
+				?,
+				?,
+				?,
+				?,
+				?)");
+		foreach($this->data["contacts"] as $contact) {
+			if (!$contact["contacttype"]) {
+				continue;
+			}
+			$app_person_id = reset($this->data["app_app_person_id"]);
+			if ($contact["app_person_id"]) {
+				$app_person_id = $contact["app_person_id"];
+			}
+			$restricted = ($contact["restricted"] ? 1 : 0);
+			$stmt->bind_param("isisi",
+				$contact["application"],
+				$contact["contacttype"],
+				$restricted,
+				$contact["value"],
+				$app_person_id);
+			$stmt->execute();
+			$num_rows += $this->connection->affected_rows;
+		}
 		$stmt->close();
 		return $num_rows;
 	}
