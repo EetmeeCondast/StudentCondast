@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: student\n"
 "POT-Creation-Date: 2016-10-24 14:57+0200\n"
-"PO-Revision-Date: 2016-10-29 17:03+0200\n"
+"PO-Revision-Date: 2016-11-06 17:16+0100\n"
 "Last-Translator: admin <info@josnabru.nl>\n"
 "Language-Team: Dutch\n"
 "Language: nl_NL\n"
@@ -22,6 +22,9 @@ msgstr "Wijzig persoon"
 
 msgid "LOOKUP_PERSON"
 msgstr "Zoek persoon"
+
+msgid "CONTACTS_TITLE"
+msgstr "Contacten"
 
 msgid "CREATE_PERSON"
 msgstr "Registreer persoon"
@@ -166,3 +169,33 @@ msgstr "Achternaam verplicht"
 
 msgid "FEEDBACK_DESCRIPTION_REQUIRED"
 msgstr "Beschrijving beroep verplicht"
+
+msgid "FEEDBACK_CONTACT_REQUIRED"
+msgstr "Minstens 1 contact-methode verplicht"
+
+msgid "FEEDBACK_CONTACT_NO_CONTACTTYPE"
+msgstr "Geen contact-type ingevuld"
+
+msgid "FEEDBACK_CONTACT_NO_VALUE"
+msgstr "Geen of ongeldige waarde voor contacttype ingevuld"
+
+msgid "CONTACTTYPE"
+msgstr "Contact-type"
+
+msgid "VALUE"
+msgstr "Waarde"
+
+msgid "RESTRICTED"
+msgstr "Beperkt"
+
+msgid "EMAIL"
+msgstr "E-mail adres"
+
+msgid "MOBILE"
+msgstr "Telefoon mobiel"
+
+msgid "TELEPHONE_HOME"
+msgstr "Telefoon thuis"
+
+msgid "TELEPHONE_WORK"
+msgstr "Telefoon werk"
