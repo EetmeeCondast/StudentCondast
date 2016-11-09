@@ -17,3 +17,5 @@ Includes use of MySQL database and internationalization.
   
 Internationalization:
 Only works with WordPress >= 4.6.1. .po files must be compiled into .mo files. Resulting .mo files must be added to /wp-content/languages/ directory.
+
+Added this line wednesday 11:52
