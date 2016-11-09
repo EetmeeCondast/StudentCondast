@@ -14,6 +14,8 @@ Includes use of MySQL database and internationalization.
 /wp-content/languages/  
 &nbsp;&nbsp;student-en_US.po  
 &nbsp;&nbsp;student-nl_NL.po  
+&nbsp;&nbsp;student-en_US.mo  
+&nbsp;&nbsp;student-nl_NL.mo  
   
 Internationalization:
 Only works with WordPress >= 4.6.1. .po files must be compiled into .mo files. Resulting .mo files must be added to /wp-content/languages/ directory.
