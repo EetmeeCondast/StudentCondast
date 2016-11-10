@@ -1,0 +1,102 @@
+<?php
+/*
+Wat algemene acties die uitgevoerd moeten worden
+en de StudentUtilities class
+/*
+/*
+	Zorg er voor dat $_SESSION gebruikt kan worden en voeg eigen css en/of javabestanden bestanden toe.
+*/
+add_action('init', 'StudentUtilities::sess_start');
+add_action('wp_enqueue_scripts', 'StudentUtilities::form_css');
+add_action('wp_enqueue_scripts', 'StudentUtilities::form_js');
+
+class StudentUtilities {
+	/*
+		Voeg eigen stylesheet toe
+	*/
+	public static function form_css() {
+		wp_register_style('student-style', plugins_url('style.css', __FILE__), array(), '1.0.1');
+		wp_enqueue_style( 'student-style');
+	}
+	/*
+		Voeg eigen javascript toe
+	*/
+	public static function form_js() {
+		wp_register_script('student-js', plugins_url('form.js', __FILE__), array(), '1.0.1');
+		wp_enqueue_script( 'student-js');
+	}
+	/*
+		Functie om form submits van niet ingelogde gebruikers af te handelen
+	*/
+	public static function no_privilege() {
+		self::set_student_message("STUDENT_NOT_LOGGED_ON");
+		wp_safe_redirect($_SERVER['HTTP_REFERER']);
+		exit;
+	}
+	/*
+		Zet boodschap in $_SESSION["student_messages"]
+	*/
+	function set_student_message($message, $name = null) {
+		if (!isset($_SESSION["student_messages"])) {
+			$_SESSION["student_messages"] = array();
+		}
+		if (!$name) {
+			$_SESSION["student_messages"][] = $message;
+		} else {
+			$_SESSION["student_messages"][$name] = $message;
+		}
+	}
+	/*
+		Unset $_SESSION["posted_data"] (validation errors).
+	*/
+	function unset_errors() {
+		if (isset($_SESSION["posted_data"])) {
+			$_SESSION["posted_data"] = array();
+			unset($_SESSION["posted_data"]);
+		}
+	}
+	/*
+		Set $_SESSION["posted_data"] (validation errors).
+	*/
+	function set_errors($src, &$student) {
+		/*
+		$_SESSION["posted_data"]["SRC"] wordt gebruikt in de functie sess_start()
+		om er voor te zorgen dat fouten die bij het valideren geconstateerd zijn
+		niet overgaan van het ene naar het andere formulier.
+		*/
+		$_SESSION["posted_data"] = $student->get_data();
+		$_SESSION["posted_data"]["SRC"] = $src;
+	}
+	/*
+		$_SESSION werkt niet in WordPress.
+		Om boodschappen door te geven is het toch wel handig.
+	*/
+	function sess_start() {
+		if (!session_id()) {
+			session_start();
+			if (isset($_SESSION["posted_data"])) {
+				/*
+				Als je van formulier A naar formulier B gaat moeten eventuele
+				validatiefouten gewist worden.
+				*/
+				if ($_SERVER['REQUEST_URI'] != $_SESSION["posted_data"]["SRC"]) {
+					unset_errors();
+				}
+			}
+		}
+	}
+	/*
+		Controleer of gebruiker mag doen wat hij wil doen.
+		Dit is een tijdelijke oplossing.
+	*/
+	function user_is_privileged($min_user_level) {
+		if (!is_user_logged_in()) {
+			return false;
+		}
+		$user_level = wp_get_current_user()->__get('wp_user_level');
+		if ($user_level < $min_user_level) {
+			return false;
+		}
+		return true;
+	}
+}
