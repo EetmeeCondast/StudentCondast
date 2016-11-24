@@ -5,10 +5,10 @@
 */
 	public static function action($atts) {
 		$MIN_USER_LEVEL = 1;	/*	Het minimale user level dat de gebruiker moet hebben voor deze functie	*/
-		$redirect_to = '/update_person/';
+		$redirect_to = 'update_person/';
 		if (!StudentUtilities::user_is_privileged($MIN_USER_LEVEL)) {	
 			StudentUtilities::set_student_message("STUDENT_NOT_PRIVILEGED");
-			$redirect_to = '/lookup_person/';
+			$redirect_to = 'lookup_person/';
 		} else {
 			require_once(STUDENT__PLUGIN_DIR . "PersonModel.php");
 			$student = new PersonModel;
@@ -33,7 +33,7 @@
 				*/
 				$_POST['surname'] = $_SESSION["lookup_result"]["search_name"];
 				PersonFindAction::action($atts);
-				$redirect_to = '/lookup-person/';
+				$redirect_to = 'lookup-person/';
 			} else {
 				/* Er zijn fouten geconstateerd in de invoer. */
 				/* Zorg er voor dat die fouten getoond worden. */

@@ -4,7 +4,7 @@ Plugin Name: Student toon (fout)boodschappen
 Description: Plugin t.b.v. Student formulieren
 Text Domain: student
 */
-define('STUDENT__PLUGIN_DIR', plugin_dir_path( __FILE__ ));
+if (!defined('STUDENT__PLUGIN_DIR')) define('STUDENT__PLUGIN_DIR', plugin_dir_path( __FILE__ ));
 require_once(STUDENT__PLUGIN_DIR . "utilities.php");
 
 function get_student_messages() {

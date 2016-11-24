@@ -1,12 +1,8 @@
 <?php
 /*
-Wat algemene acties die uitgevoerd moeten worden
-en de StudentUtilities class
-/*
-/*
-	Zorg er voor dat $_SESSION gebruikt kan worden en voeg eigen css en/of javabestanden bestanden toe.
+De StudentUtilities class
 */
-add_action('init', 'StudentUtilities::sess_start');
+add_action('init', 'StudentUtilities::sess_start', 1);
 add_action('wp_enqueue_scripts', 'StudentUtilities::form_css');
 add_action('wp_enqueue_scripts', 'StudentUtilities::form_js');
 
@@ -36,7 +32,7 @@ class StudentUtilities {
 	/*
 		Zet boodschap in $_SESSION["student_messages"]
 	*/
-	function set_student_message($message, $name = null) {
+	public static function set_student_message($message, $name = null) {
 		if (!isset($_SESSION["student_messages"])) {
 			$_SESSION["student_messages"] = array();
 		}
@@ -49,7 +45,7 @@ class StudentUtilities {
 	/*
 		Unset $_SESSION["posted_data"] (validation errors).
 	*/
-	function unset_errors() {
+	public static function unset_errors() {
 		if (isset($_SESSION["posted_data"])) {
 			$_SESSION["posted_data"] = array();
 			unset($_SESSION["posted_data"]);
@@ -58,7 +54,7 @@ class StudentUtilities {
 	/*
 		Set $_SESSION["posted_data"] (validation errors).
 	*/
-	function set_errors($src, &$student) {
+	public static function set_errors($src, &$student) {
 		/*
 		$_SESSION["posted_data"]["SRC"] wordt gebruikt in de functie sess_start()
 		om er voor te zorgen dat fouten die bij het valideren geconstateerd zijn
@@ -71,16 +67,18 @@ class StudentUtilities {
 		$_SESSION werkt niet in WordPress.
 		Om boodschappen door te geven is het toch wel handig.
 	*/
-	function sess_start() {
+	public static function sess_start() {
 		if (!session_id()) {
 			session_start();
+		}
+		else {
 			if (isset($_SESSION["posted_data"])) {
 				/*
 				Als je van formulier A naar formulier B gaat moeten eventuele
 				validatiefouten gewist worden.
 				*/
 				if ($_SERVER['REQUEST_URI'] != $_SESSION["posted_data"]["SRC"]) {
-					unset_errors();
+					self::unset_errors();
 				}
 			}
 		}
@@ -89,7 +87,7 @@ class StudentUtilities {
 		Controleer of gebruiker mag doen wat hij wil doen.
 		Dit is een tijdelijke oplossing.
 	*/
-	function user_is_privileged($min_user_level) {
+	public static function user_is_privileged($min_user_level) {
 		if (!is_user_logged_in()) {
 			return false;
 		}

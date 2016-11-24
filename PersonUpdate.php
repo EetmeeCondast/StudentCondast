@@ -4,11 +4,18 @@ Plugin Name: Student persoonsgegevens wijzigen
 Description: Plugin t.b.v. formulier "Wijzig persoonsgegevens"
 Text Domain: student
 */
-define('STUDENT__PLUGIN_DIR', plugin_dir_path( __FILE__ ));
-require_once(STUDENT__PLUGIN_DIR . "utilities.php");
 /*
 	Hier wordt het "Update persoonsgegevens" formulier afgehandeld.
 */
+//session_start();
+
+if (!defined('STUDENT__PLUGIN_DIR')) define('STUDENT__PLUGIN_DIR', plugin_dir_path( __FILE__ ));
+require_once(STUDENT__PLUGIN_DIR . "utilities.php");
+
+//add_action('init', 'StudentUtilities::sess_start', 1);
+//add_action('wp_enqueue_scripts', 'StudentUtilities::form_css');
+//add_action('wp_enqueue_scripts', 'StudentUtilities::form_js');
+
 require_once(STUDENT__PLUGIN_DIR . "PersonUpdateAction.php"); 
 add_action('admin_post_update_form_action', 'PersonUpdateAction::action');
 /*
@@ -44,7 +51,7 @@ function update_form($atts) {
 			$student->set_data($_SESSION["posted_data"]);
 		} else {
 			if (!$student->from_database($person_id)) {
-				set_student_message("PERSON_ID_NOT_FOUND");
+				StudentUtilities::set_student_message("PERSON_ID_NOT_FOUND");
 			}
 		}
 		$form = PersonView::form($student, "update_form_action", $validation_errors);

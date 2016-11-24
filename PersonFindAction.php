@@ -5,7 +5,7 @@ class PersonFindAction {
 */
 	public static function action($atts) {
 		$MIN_USER_LEVEL = 1;	/*	Het minimale user level dat de gebruiker moet hebben voor deze functie	*/
-		$redirect_to = '/lookup-person/';
+		$redirect_to = 'lookup_person/';
 		$_SESSION["lookup_result"] = array();
 		if (!StudentUtilities::user_is_privileged($MIN_USER_LEVEL)) {	
 			StudentUtilities::set_student_message("STUDENT_NOT_PRIVILEGED");

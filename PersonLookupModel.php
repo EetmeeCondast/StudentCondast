@@ -13,7 +13,7 @@
 */
 	private function connect() {
 		if (!$this->connection) {
-			$this->connection = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, STUDENT_DB_NAME) ;
+			$this->connection = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, EETMEE_DB_NAME) ;
 			if (mysqli_connect_errno()) {
 				echo "Connect failed: " . mysqli_connect_error();
 				exit();

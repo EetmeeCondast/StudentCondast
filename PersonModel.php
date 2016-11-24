@@ -63,7 +63,7 @@
 */
 	private function connect() {
 		if (!$this->connection) {
-			$this->connection = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, STUDENT_DB_NAME) ;
+			$this->connection = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, EETMEE_DB_NAME) ;
 			if (mysqli_connect_errno()) {
 				echo "Connect failed: " . mysqli_connect_error();
 				exit();
@@ -122,38 +122,49 @@
 		/*
 			Haal APPLICATION_PERSONs op.
 		*/
-		$appprs_stmt = $this->connection->prepare("select
+		$this->data["app_app_person_id"] = array();
+		$appprs_stmt = $this->connection->prepare("
+			select
 				APP_PERSON_ID,
 				CODE
 			from APPLICATIONPERSON 
 			where PERSON = ?");
-		$contact_stmt = $this->connection->prepare("select
+		$appprs_stmt->bind_param("i", $person_id);
+		$appprs_stmt->execute();
+		$appprs_stmt->bind_result(
+			$APP_PERSON_ID,
+			$CODE);
+		while($appprs = $appprs_stmt->fetch()) {
+			$this->data["app_app_person_id"][$CODE] = $APP_PERSON_ID;
+		}
+		/*
+			Haal per applicatie de contacten van de persoon op
+		*/
+		$contact_stmt = $this->connection->prepare("
+			select
 				APPLICATION,
 				CONTACTTYPE,
 				RESTRICTED,
 				VALUE
 			from ApplicationPerson_CONTACTS 
 			where ApplicationPerson_APP_PERSON_ID = ?");
-		$appprs_stmt->bind_param("i", $person_id);
-		$appprs_stmt->execute();
-		$appprs_result = $appprs_stmt->get_result();
-		$this->data["app_app_person_id"] = array();
 		$this->data["contacts"] = array();
 		$idx = 1;
-		while ($appprs = $appprs_result->fetch_assoc()) {
-			$app_person_id = $appprs["APP_PERSON_ID"];
-			$app_code = $appprs["CODE"];
-			$this->data["app_app_person_id"][$app_code] = $app_person_id;
+		foreach($this->data["app_app_person_id"] as $app_code => $app_person_id) {
 			$contact_stmt->bind_param("i", $app_person_id);
 			$contact_stmt->execute();
-			$contact_result = $contact_stmt->get_result();
-			while ($contact = $contact_result->fetch_assoc()) {
+			$contact_stmt->bind_result(
+				$APPLICATION,
+				$CONTACTTYPE,
+				$RESTRICTED,
+				$VALUE);
+			while ($contact_stmt->fetch()) {
 				$this->data["contacts"][$idx] = array(
 					"app_person_id" => $app_person_id,
 					"application" => $app_code,
-					"contacttype" => $contact["CONTACTTYPE"],
-					"restricted" => $contact["RESTRICTED"],
-					"value" => $contact["VALUE"]);
+					"contacttype" => $CONTACTTYPE,
+					"restricted" => $RESTRICTED,
+					"value" => $VALUE);
 				$idx++;
 			}
 		}

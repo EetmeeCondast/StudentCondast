@@ -4,11 +4,18 @@ Plugin Name: Student vinden op naam plugin
 Description: Plugin t.b.v. formulier "zoek student op naam"
 Text Domain: student
 */
-define('STUDENT__PLUGIN_DIR', plugin_dir_path( __FILE__ ));
-require_once(STUDENT__PLUGIN_DIR . "utilities.php");
 /*
 	Hier wordt het "Zoek student op naam" formulier afgehandeld
 */
+//session_start();
+
+if (!defined('STUDENT__PLUGIN_DIR')) define('STUDENT__PLUGIN_DIR', plugin_dir_path( __FILE__ ));
+require_once(STUDENT__PLUGIN_DIR . "utilities.php");
+
+//add_action('init', 'StudentUtilities::sess_start', 1);
+//add_action('wp_enqueue_scripts', 'StudentUtilities::form_css');
+//add_action('wp_enqueue_scripts', 'StudentUtilities::form_js');
+
 require_once(STUDENT__PLUGIN_DIR . "PersonFindAction.php"); 
 add_action('admin_post_lookup_form_action', 'PersonFindAction::action');
 /*
