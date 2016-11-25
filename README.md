@@ -23,6 +23,6 @@ Includes use of MySQL database and internationalization.
 &nbsp;&nbsp;student-nl_NL.po  
   
 Internationalization:
-Only works with WordPress >= 4.6.1. .po files must be compiled into .mo files. Resulting .mo files must be added to /wp-content/languages/ directory.
+Only works with WordPress >= 4.6.1. .po files must be compiled into .mo files. Resulting .mo files must be added to /wp-content/languages/plugins/ directory. If needed: in wp-config.php: define ('WPLANG', 'nl_NL');
   
 
