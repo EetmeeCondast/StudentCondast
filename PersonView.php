@@ -27,8 +27,25 @@ class PersonView {
 		<input type='text' name='prefix' id='prefix' value='" . $person_data->prefix() . "'>
 		<label for 'surname'>" . __('SURNAME', 'student') . ": </label>
 		<input type='text' name='surname' id='surname' required value='" . $person_data->surname() . "'>
-        <label for 'address'>" . __('ADDRESS', 'student') . ": </label>
-		<input type='text' name='address' id='address' required value='" . $person_data->address() . "'>
+        <label for 'postcode'>" . __('POSTCODE', 'student') . ": </label>
+		<input type='text' name='postcode' id='postcode' required value='" . $person_data->postcode() . "'>
+        <label for 'number'>" . __('NUMBER', 'student') . ": </label>
+        <input type='number' name='number' id='number' min='1' required value='" . $person_data->number() . "'>
+        <label for 'extension'>" . __('EXTENSION', 'student') . ": </label>
+		<input type='text' name='extension' id='extension'  value='" . $person_data->extension() . "'>
+        <button onclick='javascript:getAdres(); return false;'>Zoek adres</button><br>
+        <label for 'street'>" . __('STREET', 'student') . ": </label>
+		<input type='text' name='street' id='street' required readonly value='" . $person_data->street() . "'>
+        <label for 'town'>" . __('TOWN', 'student') . ": </label>
+		<input type='text' name='town' id='town' required readonly value='" . $person_data->town() . "'>
+        <label for 'longtitude'>" . __('LONGTITUDE', 'student') . ": </label>
+		<input type='text' name='longtitude' id='longtitude' readonly value='" . $person_data->longtitude() . "'>
+        <label for 'latitude'>" . __('LATITUDE', 'student') . ": </label>
+		<input type='text' name='latitude' id='latitude' readonly value='" . $person_data->latitude() . "'>
+        
+       
+       
+        
 		<label for 'gender'>" . __('GENDER', 'student') . ": </label>
 		<select name='gender' id='gender'>
 			<option " . self::selected($person_data, "gender", "FEMALE") . 
