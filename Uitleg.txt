@@ -1,0 +1,4 @@
+Profiel 1 = Gast
+Profiel 2 = Host
+Profiel 3 = Huisgegevens van gast.
+Profiel 4 = Huisgegevens van Host.
