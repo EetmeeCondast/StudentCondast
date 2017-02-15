@@ -20,23 +20,6 @@ function test_knop()
             
     $(function(){
         
-        function changeValues(){
-            //alert("values changed");
-            var sumMeals = 0;
-            $('.maaltijd-prijs').each(function(i, obj) {
-                sumMeals += $(this).val()*1;
-            });
-            var sumTickets = 0;
-            $('.price').each(function(i, obj) {
-                sumTickets += $(this).val()*1;
-            });
-            
-            document.getElementById("totaal_tickets").value = sumTickets;
-            document.getElementById("totaal_maaltijden").value = sumMeals;
-            
-            
-            document.getElementById("totaal_prijs").value = (sumMeals + sumTickets);
-        }
         
                 var maxAppend = 0;
                 $("#button1").click(function(){
@@ -47,27 +30,13 @@ function test_knop()
                 //$('#newTicket').append(newTicket); 
                      $('.bodyClass').append(newTicket);
                 maxAppend++;
-                    changeValues();
+                    
             });
             $(".bodyClass").delegate(".delete", "click", function(){
                 $(this).parent().parent().remove();
                 maxAppend--;
-                changeValues();
+                
             });
-        
-           $(".bodyClass").delegate(".dag", "change", function(){
-                var newTicket = $(this).parent().parent();
-                var prijs = newTicket.find(".dag option:selected").attr("ticket-prijs");
-                newTicket.find(".price").val(prijs);
-               changeValues();
-           }); 
-        
-         $(".bodyClass").delegate(".maaltijd","change", function(){
-                var newTicket = $(this).parent().parent();
-                var prijs = newTicket.find(".maaltijd option:selected").attr("maaltijd-prijs");
-                newTicket.find(".maaltijd-prijs").val(prijs);
-             changeValues();
-           }); 
         
         
         });
@@ -102,7 +71,7 @@ function test_knop()
                             <option value = "7" > Zondag </option> 
                         </select>                                                                                                                                
                     </td> 
-                    <td>gdgdgdg
+                    <td>
                         <input type="text" name="[]" class="" value="" /> 
                     </td> 
                     <td>Test 2:
