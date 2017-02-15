@@ -27,6 +27,32 @@ function MarkValidationErrors(errors) {
 		}
 	}
 }
+// adres ophalen door middel van postcode huisnummer
+function getAdres() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        var jsonData = JSON.parse(this.responseText);
+        var city = jsonData["_embedded"]["addresses"][0]["city"]["label"];
+        var street = jsonData["_embedded"]["addresses"][0]["street"];
+        var long = jsonData["_embedded"]["addresses"][0]["geo"]["center"]["wgs84"]["coordinates"][0] ;
+        var lat = jsonData["_embedded"]["addresses"][0]["geo"]["center"]["wgs84"]["coordinates"][1] ;
+       document.getElementById("town").value = city;
+       document.getElementById("street").value = street;
+       document.getElementById("longtitude").value = long;
+       document.getElementById("latitude").value = lat;
+       //console.log(jsonData["_embedded"]["addresses"][0]["geo"]["center"]["wgs84"]["coordinates"]);
+       
+    }
+  }
+ var pc = document.getElementById("postcode").value;
+ var hnr = document.getElementById("number").value;
+  xhttp.open("GET", "https://postcode-api.apiwise.nl/v2/addresses?postcode=" + pc + "&number=" + hnr, true);
+  xhttp.setRequestHeader("X-Api-Key", "aABHjjWGDR6mNCw907V046HnTBitIzWc7z91yPuu");
+  xhttp.send();
+}
+
+
 function append_contacts(contacts) {
 	var tbody = document.getElementById("contacts_tbody");
 	var src_row = document.getElementById("contact_row");
