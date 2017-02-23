@@ -124,7 +124,7 @@ var maxid = 0;
 var groups = [];
 function append_data(group, data) {
 	//	Bepaal te kopiëren node en zijn parent. 
-	//	<table id='group_node' ...>
+	//	<tag id='group_node' ...>
 	nodeid = group + "_node";
 	var src_node = document.getElementById(nodeid);
 	groups.push(src_node.cloneNode(true));
@@ -191,10 +191,6 @@ function add_node(id) {
 	var parentnode = src_node.parentNode;	//	<form...
 	src_node.id = "node_" + maxid;
 	maxid++;
-//	var new_node = src_node.cloneNode(true);
-//	var original_node = null;
-//	new_node.id = "node_" + maxid;
-//	var group_index = 0;
 	for (var group_index = 0; group_index < groups.length; group_index++) {
 		var group = groups[group_index];
 		if (group.id == id) {
@@ -208,19 +204,6 @@ function add_node(id) {
 		button_object.setAttribute("onClick", 'javascript: delete_node("' + src_node.id + '"); return false;');
 		button_object.textContent = "DEL";
 	}
-//	parentnode.insertBefore(original_node, src_node);
-//	parentnode.removeChild(src_node);
-//	src_selects = src_node.getElementsByTagName("select");
-//	new_selects = new_node.getElementsByTagName("select");
-//	for (var j = 0; j < src_selects.length; j++) {
-//		select = src_selects[j];
-//		for (var k = 0; k < select.length; k++) {
-//			option = select[k];
-//			if (option.value == select.value) {
-//				new_selects[j].selectedIndex = k;
-//			}
-//		}
-//	}
 	parentnode.appendChild(original_node);
 }
 function delete_node(id) {
