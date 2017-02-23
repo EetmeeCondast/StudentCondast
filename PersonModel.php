@@ -20,11 +20,23 @@
 		$this->data["firstname"] = "";
 		$this->data["prefix"] = "";
 		$this->data["surname"] = "";
+		$this->data["street"] = "";
+		$this->data["street_ext"] = "";
+		$this->data["postcode"] = "";
+		$this->data["number"] = "";
+		$this->data["extension"] = "";
+		$this->data["town"] = "";
+		$this->data["country"] = "THE_NETHERLANDS";
+		$this->data["addresses_key"] = "MAIN";
 		$this->data["description"] = "";
 		$this->data["nature"] = "STUDENT";
 		$this->data["upas"] = "";
+		$this->data["hobbies"] = "";
 		$this->data["app_app_person_id"] = array();
 		$this->data["contacts"] = array();
+		$this->data["longtitude"] = null;
+		$this->data["latitude"] = null;
+		$this->data["profiles"] = array();
 	}
 	public function __destruct() {
 		if ($this->connection) {
@@ -44,9 +56,19 @@
 	public function firstname() { 		return $this->data["firstname"]; }
 	public function prefix() { 			return $this->data["prefix"]; }
 	public function surname() { 		return $this->data["surname"]; }
+	public function street() { 		return $this->data["street"]; }
+	public function street_ext() { 		return $this->data["street_ext"]; }
+	public function postcode() { 		return $this->data["postcode"]; }
+	public function number() { 		return $this->data["number"]; }
+	public function extension() { 		return $this->data["extension"]; }
+	public function town() { 		return $this->data["town"]; }
+	public function addresses_key() { 		return $this->data["addresses_key"]; }
 	public function description() { 	return $this->data["description"]; }
 	public function nature() { 			return $this->data["nature"]; }
 	public function upas() { 			return $this->data["upas"]; }
+	public function hobbies() { 		return $this->data["hobbies"]; }
+	public function longtitude() { 			return $this->data["longtitude"]; }
+	public function latitude() { 			return $this->data["latitude"]; }
 	public function app_person_id($application_code) {
 		$app_person_id = 0;
 		if (array_key_exists($application_code, $this->data["app_app_person_id"])) {
@@ -57,19 +79,47 @@
 	public function contacts() {
 		return $this->data["contacts"]; 
 	}
+	public function profiles() {
+		return $this->data["profiles"]; 
+	}
 /*
 	Verbind aan database.
 	Constanten m.b.t. de database zijn gedefinieerd in wp-config.php.
 */
 	private function connect() {
 		if (!$this->connection) {
-			$this->connection = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, STUDENT_DB_NAME) ;
+			$this->connection = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, EETMEE_DB_NAME) ;
 			if (mysqli_connect_errno()) {
 				echo "Connect failed: " . mysqli_connect_error();
 				exit();
 			}
 		}
 	}
+	public function get_applications() {
+		/*
+			Eerst uitzoeken welke applicaties de gebruiker mag benaderen!
+			Dit wordt later geïmplementeerd.
+		*/
+		/*
+			Haal applicatities op uit admin database.
+		*/
+		$admin_connection = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, ADMIN_DB_NAME) ;
+		if (mysqli_connect_errno()) {
+			echo "Connect admin failed: " . mysqli_connect_error();
+			exit();
+		}
+		$stmt = $admin_connection->prepare("select APPLICATION_ID, DATABASE_NAME from APPLICATION");
+		$stmt->execute();
+		$applications = array();
+		$stmt->bind_result($application_id, $db_name);
+		while ($stmt->fetch()) {
+			$applications[$application_id] = $db_name;
+		}
+		$stmt->close();
+		$admin_connection->close();
+		return $applications;
+	}
+
 /*
 	Haal gegevens uit database.
 	Invoer: PERSON.PERSON_ID.
@@ -95,7 +145,8 @@
 				SURNAME,
 				DESCRIPTION,
 				NATURE,
-				UPAS
+				UPAS,
+				HOBBIES
 			from PERSON where PERSON_ID = ?");
 		$stmt->bind_param("i", $person_id);
 		$stmt->execute();
@@ -111,7 +162,8 @@
 			$this->data["surname"],
 			$this->data["description"],
 			$this->data["nature"],
-			$this->data["upas"]);
+			$this->data["upas"],
+			$this->data["hobbies"]);
 		if (!$stmt->fetch()) {
 			//
 			//	Geen persoon gevonden. Sluit statement en return.
@@ -119,46 +171,134 @@
 			return false;
 		}
 		$stmt->close();
+       
+        /*
+            Haal PERSON_ADDRESS op
+        */
+            $person_address_stmt = $this->connection->prepare("
+			select
+				EXTENSION,
+				LATITUDE,
+                LONGTITUDE,
+                ADDRESS_ADDRESS_ID,
+                NUMBER
+			from PERSON_ADDRESS 
+			where PERSON_PERSON_ID = ?");
+		$person_address_stmt->bind_param("i", $person_id);
+		$person_address_stmt->execute();
+		$person_address_stmt->bind_result(
+            $this->data["extension"],
+			$this->data["latitude"],
+			$this->data["longtitude"],
+			$address_address_id,
+			$this->data["number"]);
+        $person_address_stmt->fetch();
+         $person_address_stmt->close();
+        
+        /*
+            Haal ADDRESS OP
+        */
+        $address_stmt = $this->connection->prepare("
+			select
+				POSTCODE,
+				STREET,
+                TOWN
+			from ADDRESS 
+			where ADDRESS_ID = ?");
+		$address_stmt->bind_param("i", $address_address_id);
+		$address_stmt->execute();
+		$address_stmt->bind_result(
+            $this->data["postcode"],
+			$this->data["street"],
+			$this->data["town"]);
+        $address_stmt->fetch();
+        $address_stmt->close();
 		/*
 			Haal APPLICATION_PERSONs op.
 		*/
-		$appprs_stmt = $this->connection->prepare("select
+		$this->data["app_app_person_id"] = array();
+		$appprs_stmt = $this->connection->prepare("
+			select
 				APP_PERSON_ID,
 				CODE
 			from APPLICATIONPERSON 
 			where PERSON = ?");
-		$contact_stmt = $this->connection->prepare("select
+		$appprs_stmt->bind_param("i", $person_id);
+		$appprs_stmt->execute();
+		$appprs_stmt->bind_result(
+			$APP_PERSON_ID,
+			$CODE);
+		while($appprs = $appprs_stmt->fetch()) {
+			$this->data["app_app_person_id"][$CODE] = $APP_PERSON_ID;
+		}
+        
+		/*
+			Haal per applicatie de contacten van de persoon op
+		*/
+		$contact_stmt = $this->connection->prepare("
+			select
 				APPLICATION,
 				CONTACTTYPE,
 				RESTRICTED,
 				VALUE
 			from ApplicationPerson_CONTACTS 
-			where ApplicationPerson_APP_PERSON_ID = ?");
-		$appprs_stmt->bind_param("i", $person_id);
-		$appprs_stmt->execute();
-		$appprs_result = $appprs_stmt->get_result();
-		$this->data["app_app_person_id"] = array();
+			where ApplicationPerson_aPP_PERSON_ID = ?");
 		$this->data["contacts"] = array();
 		$idx = 1;
-		while ($appprs = $appprs_result->fetch_assoc()) {
-			$app_person_id = $appprs["APP_PERSON_ID"];
-			$app_code = $appprs["CODE"];
-			$this->data["app_app_person_id"][$app_code] = $app_person_id;
+		foreach($this->data["app_app_person_id"] as $app_code => $app_person_id) {
 			$contact_stmt->bind_param("i", $app_person_id);
 			$contact_stmt->execute();
-			$contact_result = $contact_stmt->get_result();
-			while ($contact = $contact_result->fetch_assoc()) {
+		$contact_stmt->bind_result(
+			$app_code,
+			$CONTACTTYPE,
+			$RESTRICTED,
+			$VALUE);
+			while ($contact_stmt->fetch()) {
 				$this->data["contacts"][$idx] = array(
 					"app_person_id" => $app_person_id,
 					"application" => $app_code,
-					"contacttype" => $contact["CONTACTTYPE"],
-					"restricted" => $contact["RESTRICTED"],
-					"value" => $contact["VALUE"]);
+					"contacttype" => $CONTACTTYPE,
+					"restricted" => $RESTRICTED,
+					"value" => $VALUE);
 				$idx++;
 			}
 		}
 		$contact_stmt->close();
 		$appprs_stmt->close();
+		/*
+			Haal de profielen op.
+		*/
+		$apps = $this->get_applications();
+		foreach($apps as $app_id => $db_name) {
+			$app_connection = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, $db_name) ;
+                        if (mysqli_connect_errno()) {
+                                echo "Connect " . $db_name . "failed: " . mysqli_connect_error();
+                                exit();
+                        }
+			$mbr_query = $app_connection->prepare("
+				select Group_GROUP_ID from Group_MEMBERS
+				where PERSON_ID = ?");
+			$mbr_query->bind_param("i", $person_id);
+			$mbr_query->execute();
+			$mbr_query_result = $mbr_query->get_result();
+			$mbr_query->close();
+			while ($mbr_row = $mbr_query_result->fetch_assoc()) {
+				$prf_query = $app_connection->prepare("
+					select PROFILE_ID, discriminator from PROFILE
+					where GROUP_GROUP_ID = ?");
+				$prf_query->bind_param("i", $mbr_row["Group_GROUP_ID"]);
+				$prf_query->execute();
+				$prf_query_result = $prf_query->get_result();
+				while($prf_row = $prf_query_result->fetch_assoc()) {
+					$this->data["profiles"][$db_name] = array(
+						"profile_id" => $prf_row["PROFILE_ID"],
+						"discriminator" => $prf_row["discriminator"]
+					);
+				}
+				$prf_query->close();
+			}
+			$app_connection->close();	
+		}
 		return true;
 	}
 /*
@@ -225,7 +365,19 @@
 			$validation_errors["surname"] = "FEEDBACK_SURNAME_REQUIRED";
 			$valid = false;
 		}
-		$this->data["description"] = trim($this->description());
+        // Check postcode
+        $this->data["postcode"] = $this->postcode();
+        if (!$this->postcode()) {
+			$validation_errors["postcode"] = "FEEDBACK_POSTCODE_REQUIRED";
+			$valid = false;
+		}
+        // Check number
+         $this->data["number"] = $this->number();
+        if (!$this->postcode()) {
+			$validation_errors["number"] = "FEEDBACK_NUMBER_REQUIRED";
+			$valid = false;
+		}
+	$this->data["description"] = trim($this->description());
 		if (!$this->description()) {
 			$validation_errors["description"] = "FEEDBACK_DESCRIPTION_REQUIRED";
 			$valid = false;
@@ -268,6 +420,80 @@
 			return $validation_errors;
 		}
 	}
+/*
+	Maak nieuwe rij aan in ADDRESS tabel.
+	Gegevens komen uit dit object.
+	Method retourneert nieuwe ADDRESS_ID of 0 (indien geen succes). 
+*/
+      private function createAddress(){
+         $address_id = 0;
+         $this->connect();
+         $this->connection->query("LOCK TABLES ADDRESS WRITE");
+		 $query = $this->connection->query("SELECT MAX(ADDRESS_ID) AS 'last' FROM ADDRESS");
+		if ($query->num_rows) {
+			$address_id = $query->fetch_assoc()["last"];
+        }
+          $this->connection->query("UNLOCK TABLES");
+          $address_id += 1;
+          $stmt = $this->connection->prepare("insert into ADDRESS( 
+				ADDRESS_ID,
+				COUNTRY,
+				POSTCODE,
+				STREET,
+				STREET_EXT,
+				TOWN)
+			values(
+				?,
+				?,
+				?,
+				?,
+				?,
+				?)");
+          	$stmt->bind_param("isssss",
+			$address_id,
+			$this->data["country"],
+            trim($this->data["postcode"]),
+            trim($this->data["street"]),
+            trim($this->data["street_ext"]),
+			trim($this->data["town"]));
+            $stmt->execute();
+            $stmt->close();
+            $this->createPerson_Address($address_id,$this->person_id());
+       
+        }
+        
+        private function createPerson_Address($address_id, $person_id){
+        
+         $this->connect();        
+         $stmt = $this->connection->prepare("insert into PERSON_ADDRESS( 
+				EXTENSION,
+				lATITUDE,
+				LONGTITUDE,
+				PERSON_PERSON_ID,
+				ADDRESS_ADDRESS_ID,
+				ADDRESSES_KEY,
+                NUMBER)
+			values(
+				?,
+				?,
+				?,
+				?,
+				?,
+                ?,
+                ?)");
+          	$stmt->bind_param("sssiisi",
+			trim($this->data["extension"]),
+			$this->data["latitude"],
+			$this->data["longtitude"],
+            $person_id,
+            $address_id,
+            $this->data["addresses_key"],               
+			$this->data["number"]);
+            $stmt->execute();
+            $stmt->close();
+            
+        }
+        
 /*
 	Maak nieuwe rij aan in PERSON tabel.
 	Gegevens komen uit dit object.
@@ -324,7 +550,8 @@
 		$stmt->execute();
 		if ($this->connection->affected_rows) {
 			$this->data["person_id"] = $person_id;
-			$app_person_id = $this->store_app_person($person_id);
+			$this->createAddress();
+            $app_person_id = $this->store_app_person($person_id);
 			$this->data["app_app_person_id"][0] = $app_person_id;
 			if ($app_person_id) {
 				$this->store_contacts();
@@ -335,6 +562,68 @@
 		
 		return $this->data["person_id"];
 	}
+        /*
+	Wijzig rij in ADDRESS tabel.
+	Gegevens komen uit dit object.
+	Method retourneert aantal rijen dat gemuteerd is. Zal altijd 0 of 1 zijn.
+*/
+        private function updateAddress($address_address_id){
+            
+            $this->connect();
+		$stmt = $this->connection->prepare("update ADDRESS set 
+				POSTCODE = ?,
+				STREET = ?,
+				TOWN = ?
+			where ADDRESS_ID = ?");
+		$postcode = trim($this->data["postcode"]);
+		$street = trim($this->data["street"]);
+		$town = trim($this->data["town"]);
+		$stmt->bind_param("sssi",
+			$postcode,
+			$street,
+			$town,
+            $address_address_id);
+		$stmt->execute();
+		$stmt->close();
+        }
+        /*
+	Wijzig rij in PERSON_ADDRESS tabel.
+	Gegevens komen uit dit object.
+	Method retourneert aantal rijen dat gemuteerd is. Zal altijd 0 of 1 zijn.
+*/
+        private function updatePerson_Address(){
+            
+            $this->connect();
+		$stmt = $this->connection->prepare("update PERSON_ADDRESS set 
+				EXTENSION = ?,
+				LATITUDE = ?,
+				LONGTITUDE = ?,
+				NUMBER = ?
+				where PERSON_PERSON_ID = ?");
+		$ext = trim($this->data["extension"]);
+		$lat = trim($this->data["latitude"]);
+		$lon = trim($this->data["longtitude"]);
+		$num = trim($this->data["number"]);
+		$stmt->bind_param("ssssi",
+			$ext,
+			$lat,
+			$lon,
+			$num,
+			$this->data["person_id"]);
+		$stmt->execute();
+		$stmt->close();
+            
+          $stmt = $this->connection->prepare("SELECT ADDRESS_ADDRESS_ID FROM
+          PERSON_ADDRESS WHERE PERSON_PERSON_ID = ? limit 1"); 
+            $stmt->bind_param("i",
+			$this->data["person_id"]);
+            $stmt->execute();
+		    $stmt->bind_result($address_address_id);
+            $stmt->fetch();
+            $stmt->close();
+            $this->updateAddress($address_address_id);
+            
+        }
 /*
 	Wijzig rij in PERSON tabel.
 	Gegevens komen uit dit object.
@@ -357,21 +646,27 @@
 				NATURE = ?,
 				UPAS = ?
 			where PERSON_ID = ?");
+		$calling_name = trim($this->data["calling_name"]);
+		$first_name = trim($this->data["firstname"]);
+		$prefix = trim($this->data["prefix"]);
+		$surname = trim($this->data["surname"]);
+		$desc = trim($this->data["description"]);
 		$stmt->bind_param("ssssssssssi",
 			$this->data["birthdate"],
 			$this->data["gender"],
 			$this->data["title"],
-			trim($this->data["calling_name"]),
-			trim($this->data["firstname"]),
-			trim($this->data["prefix"]),
-			trim($this->data["surname"]),
-			trim($this->data["description"]),
+			$calling_name,
+			$first_name,
+			$prefix,
+			$surname,
+			$desc,
 			$this->data["nature"],
 			$this->data["upas"],
 			$this->data["person_id"]);
 		$stmt->execute();
 		$num_rows =  $this->connection->affected_rows;
 		$stmt->close();
+        $this->updatePerson_Address();
 		$num_rows += $this->store_contacts();
 		return $num_rows;
 	}
@@ -432,7 +727,7 @@
 			if ($contact["app_person_id"]) {
 				$app_person_id = $contact["app_person_id"];
 			}
-			$restricted = ($contact["restricted"] ? 1 : 0);
+			$restricted = (isset($contact["restricted"]) ? 1 : 0);
 			$stmt->bind_param("isisi",
 				$contact["application"],
 				$contact["contacttype"],
@@ -445,5 +740,37 @@
 		$stmt->close();
 		return $num_rows;
 	}
+	public function get_application_member_data($person_id) {
+		$return = false;
+		if (!$person_id) {
+			return false;
+		}
+		$this->connect();
+		$stmt = $this->connection->prepare("select
+				BIRTHDATE,
+				FIRSTNAME,
+				PREFIX,
+				SURNAME,
+				DESCRIPTION,
+				NATURE,
+				HOBBIES
+			from PERSON where PERSON_ID = ?");
+		$stmt->bind_param("i", $person_id);
+		$stmt->execute();
+		$stmt->bind_result(
+			$this->data["birthdate"],
+			$this->data["firstname"],
+			$this->data["prefix"],
+			$this->data["surname"],
+			$this->data["description"],
+			$this->data["nature"],
+			$this->data["hobbies"]);
+		if ($stmt->fetch()) {
+			$return = true;
+		}
+		$stmt->close();
+		return $return;
+	}
+	
 }
 ?>

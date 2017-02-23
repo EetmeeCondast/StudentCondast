@@ -27,6 +27,25 @@ class PersonView {
 		<input type='text' name='prefix' id='prefix' value='" . $person_data->prefix() . "'>
 		<label for 'surname'>" . __('SURNAME', 'student') . ": </label>
 		<input type='text' name='surname' id='surname' required value='" . $person_data->surname() . "'>
+        <label for 'postcode'>" . __('POSTCODE', 'student') . ": </label>
+		<input type='text' name='postcode' id='postcode' required value='" . $person_data->postcode() . "'>
+        <label for 'number'>" . __('NUMBER', 'student') . ": </label>
+        <input type='number' name='number' id='number' min='1' required value='" . $person_data->number() . "'>
+        <label for 'extension'>" . __('EXTENSION', 'student') . ": </label>
+		<input type='text' name='extension' id='extension'  value='" . $person_data->extension() . "'>
+        <button onclick='javascript:getAdres(); return false;'>Zoek adres</button><br>
+        <label for 'street'>" . __('STREET', 'student') . ": </label>
+		<input type='text' name='street' id='street' required readonly value='" . $person_data->street() . "'>
+        <label for 'town'>" . __('TOWN', 'student') . ": </label>
+		<input type='text' name='town' id='town' required readonly value='" . $person_data->town() . "'>
+        <label for 'longtitude'>" . __('LONGTITUDE', 'student') . ": </label>
+		<input type='text' name='longtitude' id='longtitude' readonly value='" . $person_data->longtitude() . "'>
+        <label for 'latitude'>" . __('LATITUDE', 'student') . ": </label>
+		<input type='text' name='latitude' id='latitude' readonly value='" . $person_data->latitude() . "'>
+        
+       
+       
+        
 		<label for 'gender'>" . __('GENDER', 'student') . ": </label>
 		<select name='gender' id='gender'>
 			<option " . self::selected($person_data, "gender", "FEMALE") . 
@@ -105,6 +124,10 @@ class PersonView {
 			</tbody>
 		</table>
 		</fieldset>
+		<fieldset style='border: 1px solid silver; margin: 4px; clear: both;'>" . self::profiles($person_data->profiles()) . " 
+		</fieldset>
+		<fieldset style='border: 1px solid silver; margin: 4px; clear: both;'>" . self::all_profiles($person_data->get_applications()) . " 
+		</fieldset>
 		<div style='clear: both;'></div>
 		<input type='submit' value='" . $submit_button_text . "'>
 	</form>
@@ -122,6 +145,54 @@ class PersonView {
 </script>";
 		}
 		return $form;
+	}
+	public static function profiles($profiles) {
+		$html = "
+		<table>
+			<tr>
+				<th>Applicatie</th>
+				<th>Soort profiel</th>
+				<th>Actie</th>
+			</tr>";
+		foreach($profiles as $appid => $data) {
+			$html .= "
+			<tr>
+				<td>" . $appid . "</td>
+				<td>" . $data["discriminator"] . "</td>
+				<td><a href='wijzig-profiel?db_name=" . $appid . "&profile_id=" . $data["profile_id"] . "'>Wijzig</a>
+					<a href='kenmerken?db_name=" . $appid . "&profile_id=" . $data["profile_id"] . "'>o</a></td>
+			</tr>";
+		}
+		$html .= "
+		</table>";
+		return $html;
+	}
+	public static function all_profiles($applications) {
+		$html = "
+		<table>
+			<tr>
+				<th>Applicatie</th>
+				<th>Soort profiel</th>
+				<th>Actie</th>
+			</tr>";
+		foreach($applications as $appid => $application) {
+			$html .= "
+			<tr>
+				<td>" . $application . "</td>
+				<td>" . __("HOST") . "</td>
+				<td><a href='wijzig-profiel?db_name=" . $application . "&profile_id=0&discriminator=HOST'>" . __("NEW") . "</a>
+					<a href='kenmerken?db_name=" . $application . "&profile_id=0&discriminator=HOST'>o</a></td>
+			</tr>
+			<tr>
+				<td>" . $application . "</td>
+				<td>" . __("GUEST") . "</td>
+				<td><a href='wijzig-profiel?db_name=" . $application . "&profile_id=0&discriminator=PROFILE'>" . __("NEW") . "</a>
+					<a href='kenmerken?db_name=" . $application . "&profile_id=0&discriminator=PROFILE'>o</a></td>
+			</tr>";
+		}
+		$html .= "
+		</table>";
+		return $html;
 	}
 	public static function messages($messages_array) {
 		$messages_string = "";

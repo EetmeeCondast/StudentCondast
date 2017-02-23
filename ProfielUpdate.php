@@ -1,0 +1,57 @@
+<?php
+/*
+Plugin Name: Profiel wijzigen
+Description: Plugin t.b.v. formulier "Wijzig profiel"
+Text Domain: student
+*/
+/*
+	Hier wordt het "Update profielgegevens" formulier afgehandeld.
+*/
+
+if (!defined('STUDENT__PLUGIN_DIR')) define('STUDENT__PLUGIN_DIR', plugin_dir_path( __FILE__ ));
+require_once(STUDENT__PLUGIN_DIR . "utilities.php");
+
+require_once(STUDENT__PLUGIN_DIR . "ProfielUpdateAction.php"); 
+add_action('admin_post_update_form_action', 'ProfielUpdateAction::action');
+/*
+	Shortcode "update_form". Het "update profiel" formulier wordt getoond.
+*/
+function update_profile($atts) {
+	$person_id = 0;
+	if (isset($_POST)) {
+		if (isset($_POST["person_id"])) {
+			$person_id = $_POST["person_id"];
+		}
+	}
+	$validation_errors = null;
+	if (isset($_SESSION["posted_data"])) {
+		/*
+		De create_form_action() functie heeft fouten in de invoer geconstateerd.
+		Zorg er voor dat die getoond worden.
+		*/
+		$validation_errors = $_SESSION["student_messages"];
+	}
+	$form = "";
+	if (StudentUtilities::user_is_privileged(1)) {
+		require_once(STUDENT__PLUGIN_DIR . "ProfielModel.php");
+		require_once(STUDENT__PLUGIN_DIR . "ProfielView.php");
+		$profiel = new ProfielModel(StudentUtilities::get("db_name"), StudentUtilities::get("profile_id"));
+		/*
+		We kunnen hier terecht komen nadat een poging om een persooon te wijzigen mislukt is
+		vanwege ongeldige invoer (validate() in update_form_action function gaf fouten).
+		In dat geval moeten de in $_SESSION["posted_data"] opgeslagen gegevens in het formulierm gezet worden.
+		Anders moeten de gegevens uit de database komen.
+		*/
+		if ($validation_errors) {
+			$profiel->set_data($_SESSION["posted_data"]);
+		} else {
+			if (!$profiel->from_database(256)) {
+				StudentUtilities::set_student_message("PERSON_ID_NOT_FOUND");
+			}
+		}
+		$form = ProfielView::form($profiel, "update_profile_action", $validation_errors);
+	}
+	return $form;
+}
+add_shortcode("update_profile", "update_profile");
+?>
