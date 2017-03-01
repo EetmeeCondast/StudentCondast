@@ -2,6 +2,7 @@
 class PersonLookupView {
 
 	public static function form($search_result) {
+		$search_name = "";
 		if ($search_result) {
 			$search_name = $search_result["search_name"];
 		}
@@ -27,7 +28,7 @@ class PersonLookupView {
 		foreach($search_result as $key => $data) {
 			if (is_array($data)) {
 				$form .= "
-<form method='post' action='/update_person'>
+<form method='post' action='" . get_site_url() . "/update_person'>
 	<input type='hidden' name='person_id' value='" . $key . "'>
 	<button class='no_button'>" .
 		($data["title"] ? __(sprintf("%s", $data["title"]), 'student') : "") . " " . 
